@@ -246,3 +246,27 @@ body {
     background-color: rgba(99, 102, 241, 0.05);
     border-radius: 8px;
 }
+
+/* Context menu for task cards */
+#task-context-menu {
+    font-size: 14px;
+}
+
+#task-context-menu button {
+    background: transparent;
+    border: none;
+    text-align: left;
+    padding: 8px 10px;
+    width: 100%;
+    cursor: pointer;
+    border-radius: 6px;
+    color: var(--text-main);
+}
+
+#task-context-menu button:hover {
+    background: #F1F5F9;
+}
+
+@media (max-width: 768px) {
+    #task-context-menu { position: fixed; left: 10px !important; top: auto !important; bottom: 10px !important; }
+}

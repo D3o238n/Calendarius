@@ -1,0 +1,25 @@
+name: Docker image build
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - as1-feature
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-image:
+    name: Build Docker image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image
+        run: docker build -t calendarius:ci .

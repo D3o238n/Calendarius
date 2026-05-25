@@ -34,6 +34,99 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --- Контекстное меню ---
+    function removeContextMenu() {
+        const existing = document.getElementById('task-context-menu');
+        if (existing) existing.remove();
+    }
+
+    function createContextMenu(task, x, y) {
+        removeContextMenu();
+        const menu = document.createElement('div');
+        menu.id = 'task-context-menu';
+        menu.style.position = 'absolute';
+        menu.style.zIndex = 10000;
+        menu.style.left = x + 'px';
+        menu.style.top = y + 'px';
+        menu.style.background = '#fff';
+        menu.style.border = '1px solid #ddd';
+        menu.style.borderRadius = '6px';
+        menu.style.boxShadow = '0 6px 18px rgba(0,0,0,0.08)';
+        menu.style.padding = '6px';
+        menu.style.minWidth = '160px';
+
+        const btnChange = document.createElement('button');
+        btnChange.textContent = 'Изменить время';
+        btnChange.style.display = 'block';
+        btnChange.style.width = '100%';
+        btnChange.style.marginBottom = '6px';
+        btnChange.style.padding = '6px';
+
+        const btnDelete = document.createElement('button');
+        btnDelete.textContent = 'Удалить';
+        btnDelete.style.display = 'block';
+        btnDelete.style.width = '100%';
+        btnDelete.style.padding = '6px';
+
+        btnChange.addEventListener('click', () => {
+            const time = prompt('Введите время в формате HH:MM (например 14:30):');
+            if (!time) { removeContextMenu(); return; }
+            const txt = time.trim();
+            const ok = /^([01]\d|2[0-3]):[0-5]\d$/.test(txt);
+            if (!ok) {
+                alert('Неверный формат времени. Используйте HH:MM.');
+                return;
+            }
+            const [hhStr, mmStr] = txt.split(':');
+            const hh = parseInt(hhStr, 10);
+            const mm = parseInt(mmStr, 10);
+            if (isNaN(hh) || isNaN(mm)) {
+                alert('Неверное время.');
+                return;
+            }
+            if (hh < 8 || hh > 23) {
+                alert('Время должно быть в диапазоне 08:00–23:59 для календаря.');
+                return;
+            }
+            // Обновляем текст задачи: если есть " | ", оставляем заголовок
+            let parts = task.textContent.split(' | ');
+            let title = parts.length > 1 ? parts.slice(1).join(' | ').trim() : parts[0].trim();
+            task.textContent = `${txt} | ${title}`;
+
+            // Если задача внутри календарной зоны и вид не "month", обновляем позицию
+            const parentZone = task.parentElement;
+            if (parentZone && parentZone.classList && parentZone.classList.contains('tasks-dropzone') && currentView !== 'month') {
+                const hoursFromStart = hh - 8; // 8:00 — начало шкалы
+                const top = hoursFromStart * 60 + mm; // совпадает с логикой drop
+                task.style.position = 'absolute';
+                task.style.top = `${top}px`;
+                task.style.left = '5px';
+                task.style.right = '5px';
+                task.style.width = 'auto';
+                task.style.margin = '0';
+            }
+
+            saveState();
+            removeContextMenu();
+        });
+
+        btnDelete.addEventListener('click', () => {
+            if (confirm('Удалить эту задачу?')) {
+                task.remove();
+                saveState();
+            }
+            removeContextMenu();
+        });
+
+        menu.appendChild(btnChange);
+        menu.appendChild(btnDelete);
+        document.body.appendChild(menu);
+        // Закрыть при клике вне меню
+        setTimeout(() => {
+            document.addEventListener('click', removeContextMenu, { once: true });
+        }, 0);
+    }
+
     // --- 3. Состояние Календаря ---
     let currentDate = new Date();
     let currentView = 'week'; 
@@ -244,6 +337,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     this.remove();
                     saveState(); 
                 }
+            });
+
+            newTask.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+                createContextMenu(this, e.pageX, e.pageY);
             });
         });
 
