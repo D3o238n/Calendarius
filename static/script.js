@@ -78,19 +78,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function rebindDragEvents() {
         document.querySelectorAll('.task-card').forEach(task => {
-            task.addEventListener('dragstart', function() {
+            const newTask = task.cloneNode(true);
+            task.parentNode.replaceChild(newTask, task);
+
+            newTask.addEventListener('dragstart', function() {
                 draggedTask = this;
                 setTimeout(() => this.style.display = 'none', 0);
             });
-            task.addEventListener('dragend', function() {
+            
+            newTask.addEventListener('dragend', function() {
                 setTimeout(() => {
                     draggedTask.style.display = 'block';
                     draggedTask = null;
                     saveState();
                 }, 0);
             });
+
+            // ФИЧА: Удаление по двойному клику
+            newTask.addEventListener('dblclick', function() {
+                if (confirm('Удалить эту задачу?')) {
+                    this.remove();
+                    saveState();
+                }
+            });
         });
     }
+    rebindDragEvents();
 
     // Загружаем данные при старте
     if(localStorage.getItem('unassigned_tasks')) {

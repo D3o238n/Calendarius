@@ -216,3 +216,40 @@ body {
 .divider { margin: 20px 0; color: #A1A1AA; font-size: 12px; }
 .btn-google { background: white; border: 1px solid var(--border-color); padding: 12px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; }
 .hidden { display: none !important; }
+
+
+
+/* --- Адаптив под мобильные устройства (Mobile layout) --- */
+@media (max-width: 768px) {
+    .app-container {
+        flex-direction: column;
+        overflow-y: auto;
+    }
+    
+    /* Прячем левый сайдбар, оставляем только верхнюю панель меню (гамбургер делать долго) */
+    .sidebar {
+        width: 100%;
+        height: auto;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 20px;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .sidebar .lists, .sidebar .menu {
+        display: none; /* Прячем списки на мобилке ради экономии места */
+    }
+
+    /* Правый сайдбар (задачи без времени) уходит вниз */
+    .right-sidebar {
+        width: 100%;
+        border-left: none;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .time-column {
+        width: 45px; /* Сужаем колонку времени */
+    }
+}
