@@ -7,6 +7,15 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+    <div id="welcome-screen" class="welcome-screen">
+        <div class="welcome-card">
+            <h1>Календариус</h1>
+            <p>Планируй. Фокусируйся. Достигай</p>
+            <button id="btn-start" class="btn-primary" style="width: 100%; margin-top: 20px;">Начать планирование</button>
+            <div class="divider">или</div>
+            <button class="btn-google">Войти через Google</button>
+        </div>
+    </div>
     <div class="app-container">
         <aside class="sidebar">
             <div class="logo">Календариус</div>
