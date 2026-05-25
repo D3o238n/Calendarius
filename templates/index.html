@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Календариус – Календарь задач</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="logo">Календариус</div>
+            <button class="btn-primary" id="btn-new-task">+ Новая задача</button>
+            <nav class="menu">
+                <ul>
+                    <li>Входящие <span class="badge">7</span></li>
+                    <li>Сегодня <span class="badge">5</span></li>
+                    <li class="active">Календарь</li>
+                </ul>
+            </nav>
+            <div class="lists">
+                <h3>Мои списки</h3>
+                <ul>
+                    <li><span class="dot work"></span> Работа</li>
+                    <li><span class="dot study"></span> Учёба</li>
+                    <li><span class="dot personal"></span> Личное</li>
+                </ul>
+            </div>
+        </aside>
+
+        <main class="calendar-area">
+            <header class="calendar-header">
+                <div class="date-controls">
+                    <button class="btn-icon">&lt;</button>
+                    <button class="btn-icon">&gt;</button>
+                    <button class="btn-today">Сегодня</button>
+                    <h2>Май 2026</h2>
+                </div>
+                <div class="view-controls">
+                    <button>День</button>
+                    <button class="active">Неделя</button>
+                    <button>Месяц</button>
+                </div>
+            </header>
+            
+            <div class="calendar-grid" id="calendar-grid">
+                <div class="time-column">
+                    <div>09:00</div>
+                    <div>10:00</div>
+                    <div>11:00</div>
+                    <div>12:00</div>
+                </div>
+                <div class="days-container">
+                    <div class="day-column" id="day-1" data-date="2026-05-25">
+                        <div class="day-header">Пн 25</div>
+                        <div class="tasks-dropzone">
+                            </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <aside class="right-sidebar">
+            <h3>Незавершённые задачи</h3>
+            <div class="unassigned-tasks" id="unassigned-tasks">
+                <div class="task-card work" draggable="true" id="task-1">
+                    Подготовить макеты
+                </div>
+                <div class="task-card personal" draggable="true" id="task-2">
+                    Купить продукты
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
