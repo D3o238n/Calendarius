@@ -71,16 +71,41 @@ document.addEventListener('DOMContentLoaded', () => {
         btnChange.addEventListener('click', () => {
             const time = prompt('Введите время в формате HH:MM (например 14:30):');
             if (!time) { removeContextMenu(); return; }
-            const ok = /^([01]\d|2[0-3]):[0-5]\d$/.test(time.trim());
+            const txt = time.trim();
+            const ok = /^([01]\d|2[0-3]):[0-5]\d$/.test(txt);
             if (!ok) {
                 alert('Неверный формат времени. Используйте HH:MM.');
+                return;
+            }
+            const [hhStr, mmStr] = txt.split(':');
+            const hh = parseInt(hhStr, 10);
+            const mm = parseInt(mmStr, 10);
+            if (isNaN(hh) || isNaN(mm)) {
+                alert('Неверное время.');
+                return;
+            }
+            if (hh < 8 || hh > 23) {
+                alert('Время должно быть в диапазоне 08:00–23:59 для календаря.');
                 return;
             }
             // Обновляем текст задачи: если есть " | ", оставляем заголовок
             let parts = task.textContent.split(' | ');
             let title = parts.length > 1 ? parts.slice(1).join(' | ').trim() : parts[0].trim();
-            task.textContent = `${time} | ${title}`;
-            // если задача была абсолютной, не трогаем позиционирование
+            task.textContent = `${txt} | ${title}`;
+
+            // Если задача внутри календарной зоны и вид не "month", обновляем позицию
+            const parentZone = task.parentElement;
+            if (parentZone && parentZone.classList && parentZone.classList.contains('tasks-dropzone') && currentView !== 'month') {
+                const hoursFromStart = hh - 8; // 8:00 — начало шкалы
+                const top = hoursFromStart * 60 + mm; // совпадает с логикой drop
+                task.style.position = 'absolute';
+                task.style.top = `${top}px`;
+                task.style.left = '5px';
+                task.style.right = '5px';
+                task.style.width = 'auto';
+                task.style.margin = '0';
+            }
+
             saveState();
             removeContextMenu();
         });
