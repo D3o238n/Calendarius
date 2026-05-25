@@ -5,8 +5,6 @@
     --border-color: #E2E8F0;
     --text-main: #0F172A;
     --text-muted: #64748B;
-    
-    /* Цвета категорий */
     --work-color: #3B82F6;
     --study-color: #8B5CF6;
     --personal-color: #10B981;
@@ -16,7 +14,7 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: Arial, sans-serif; /* Для простоты стандартный шрифт */
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 body {
@@ -143,30 +141,11 @@ body {
     width: 60px;
     color: var(--text-muted);
     font-size: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 40px;
-    margin-top: 40px;
+    padding-top: 48px;
+    margin-top: 0;
 }
-
-.days-container {
-    flex: 1;
-    border-left: 1px solid var(--border-color);
-}
-
-.day-column {
-    flex: 1;
-    height: 100%;
-}
-.day-header {
-    text-align: center;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border-color);
-    color: var(--text-muted);
-}
-.tasks-dropzone {
-    height: 100%;
-    padding: 10px;
+.time-column div {
+    height: 60px;
 }
 
 /* --- Правый сайдбар --- */
@@ -179,7 +158,7 @@ body {
 
 .right-sidebar h3 {
     font-size: 16px;
-    margin-bottom: 20px;
+    margin-bottom: 5px;
 }
 
 /* Карточки задач */
@@ -194,8 +173,13 @@ body {
     font-size: 14px;
     font-weight: 500;
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    transition: box-shadow 0.2s, transform 0.2s;
 }
-.task-card:active { cursor: grabbing; opacity: 0.7; }
+.task-card:hover {
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transform: translateY(-1px);
+}
+.task-card:active { cursor: grabbing; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transform: translateY(0); opacity: 0.8; }
 .task-card.work { border-left-color: var(--work-color); }
 .task-card.study { border-left-color: var(--study-color); }
 .task-card.personal { border-left-color: var(--personal-color); }
@@ -217,67 +201,48 @@ body {
 .btn-google { background: white; border: 1px solid var(--border-color); padding: 12px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; }
 .hidden { display: none !important; }
 
-
-
-/* --- Адаптив под мобильные устройства (Mobile layout) --- */
+/* --- Адаптив --- */
 @media (max-width: 768px) {
-    .app-container {
-        flex-direction: column;
-        overflow-y: auto;
-    }
-    
-    /* Прячем левый сайдбар, оставляем только верхнюю панель меню (гамбургер делать долго) */
-    .sidebar {
-        width: 100%;
-        height: auto;
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-        padding: 10px 20px;
-        border-right: none;
-        border-bottom: 1px solid var(--border-color);
-    }
-    
-    .sidebar .lists, .sidebar .menu {
-        display: none; /* Прячем списки на мобилке ради экономии места */
-    }
-
-    /* Правый сайдбар (задачи без времени) уходит вниз */
-    .right-sidebar {
-        width: 100%;
-        border-left: none;
-        border-top: 1px solid var(--border-color);
-    }
-
-    .time-column {
-        width: 45px; /* Сужаем колонку времени */
-    }
+    .app-container { flex-direction: column; overflow-y: auto; }
+    .sidebar { width: 100%; height: auto; flex-direction: row; justify-content: space-between; align-items: center; padding: 10px 20px; border-right: none; border-bottom: 1px solid var(--border-color); }
+    .sidebar .lists, .sidebar .menu { display: none; }
+    .right-sidebar { width: 100%; border-left: none; border-top: 1px solid var(--border-color); }
+    .time-column { width: 45px; }
 }
 
-/* --- Стили для навигации (стрелки и "Сегодня") --- */
 .btn-icon, .btn-today {
-    background: white;
-    border: 1px solid var(--border-color);
-    padding: 8px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 500;
-    color: var(--text-main);
-    transition: background-color 0.2s;
+    background: white; border: 1px solid var(--border-color); padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: 500; color: var(--text-main); transition: background-color 0.2s;
 }
-.btn-icon:hover, .btn-today:hover {
-    background: var(--bg-color);
+.btn-icon:hover, .btn-today:hover { background: var(--bg-color); }
+.date-controls h2 { font-size: 20px; font-weight: 600; margin-left: 10px; }
+.hint-text { font-size: 12px; color: var(--text-muted); margin-bottom: 15px; font-style: italic; }
+
+.days-container { display: flex; flex: 1; border-left: 1px solid var(--border-color); }
+.day-column { flex: 1; min-width: 120px; border-right: 1px solid var(--border-color); display: flex; flex-direction: column; }
+.day-column:last-child { border-right: none; }
+
+.week-grid .tasks-dropzone, .day-grid .tasks-dropzone {
+    background-image: repeating-linear-gradient(to bottom, transparent, transparent 59px, #E2E8F0 59px, #E2E8F0 60px);
+    background-position: top; background-size: 100% 60px;
 }
-.date-controls h2 {
-    font-size: 20px;
-    font-weight: 600;
-    margin-left: 10px;
+.month-grid .days-container { display: grid; grid-template-columns: repeat(7, 1fr); grid-auto-rows: minmax(100px, auto); border: none; }
+.month-grid .day-column { border: 1px solid var(--border-color); }
+.month-grid .time-column { display: none; }
+.month-grid .tasks-dropzone { background-image: none; }
+.list-item { transition: background 0.2s; border-radius: 6px; cursor: pointer; padding: 8px 10px; margin-bottom: 5px;}
+.list-item:hover { background: var(--bg-color); }
+
+.tasks-dropzone {
+    flex: 1;
+    position: relative;
+    min-height: 100px;
 }
 
-/* --- Подсказка для удаления --- */
-.hint-text {
-    font-size: 12px;
-    color: var(--text-muted);
-    margin-bottom: 15px;
-    font-style: italic;
+.tasks-dropzone.drag-over {
+    background-color: rgba(99, 102, 241, 0.05);
+}
+
+.unassigned-tasks.drag-over {
+    background-color: rgba(99, 102, 241, 0.05);
+    border-radius: 8px;
 }

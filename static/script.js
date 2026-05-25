@@ -1,89 +1,227 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Логика экрана входа
-    const welcomeScreen = document.getElementById('welcome-screen');
-    const btnStart = document.getElementById('btn-start');
-    const btnGoogle = document.querySelector('.btn-google');
 
-    // Проверяем, заходил ли пользователь ранее
-    if (localStorage.getItem('kalendarius_auth') === 'true') {
+    // --- 1. Экраны и Авторизация ---
+    const welcomeScreen = document.getElementById('welcome-screen');
+    if (localStorage.getItem('kalendarius_auth') === 'true' && welcomeScreen) {
         welcomeScreen.classList.add('hidden');
     }
+    
+    const btnStart = document.getElementById('btn-start');
+    if (btnStart) {
+        btnStart.addEventListener('click', () => {
+            welcomeScreen.classList.add('hidden');
+            localStorage.setItem('kalendarius_auth', 'true');
+        });
+    }
+    
+    const btnGoogle = document.querySelector('.btn-google');
+    if (btnGoogle) {
+        btnGoogle.addEventListener('click', () => {
+            welcomeScreen.classList.add('hidden');
+            localStorage.setItem('kalendarius_auth', 'true');
+        });
+    }
 
-    btnStart.addEventListener('click', () => {
-        welcomeScreen.classList.add('hidden');
-        localStorage.setItem('kalendarius_auth', 'true'); // Сохраняем сессию
+    // --- 2. Сохранение Состояния ---
+    function saveState() {
+        const unassignedTasks = document.getElementById('unassigned-tasks');
+        if (unassignedTasks) {
+            localStorage.setItem('unassigned_tasks', unassignedTasks.innerHTML);
+        }
+        
+        document.querySelectorAll('.tasks-dropzone').forEach(zone => {
+            if (zone.id) localStorage.setItem(zone.id, zone.innerHTML);
+        });
+    }
+
+    // --- 3. Состояние Календаря ---
+    let currentDate = new Date();
+    let currentView = 'week'; 
+    
+    const monthLabel = document.querySelector('.date-controls h2');
+    const calendarGrid = document.getElementById('calendar-grid');
+    const daysContainer = document.querySelector('.days-container');
+    const timeColumn = document.getElementById('time-column');
+    const viewButtons = document.querySelectorAll('.view-controls button');
+    
+    function updateDateLabel() {
+        if (!monthLabel) return;
+        const options = { month: 'long', year: 'numeric' };
+        monthLabel.textContent = currentDate.toLocaleDateString('ru-RU', options).replace(' г.', '');
+    }
+
+    function renderCalendar() {
+        if (!daysContainer) return;
+        daysContainer.innerHTML = '';
+        calendarGrid.className = `calendar-grid ${currentView}-grid`;
+        updateDateLabel();
+
+        // Генерация шкалы времени с 08:00 до 00:00
+        if (timeColumn && timeColumn.children.length === 0) {
+            for (let i = 8; i <= 23; i++) {
+                timeColumn.innerHTML += `<div>${i.toString().padStart(2, '0')}:00</div>`;
+            }
+            timeColumn.innerHTML += `<div>00:00</div>`; 
+        }
+
+        let daysToRender = 1;
+        let startDate = new Date(currentDate);
+
+        if (currentView === 'week') {
+            daysToRender = 7;
+            const day = startDate.getDay() || 7; 
+            startDate.setDate(startDate.getDate() - day + 1);
+        } else if (currentView === 'month') {
+            daysToRender = 35; 
+            startDate.setDate(1);
+            const day = startDate.getDay() || 7;
+            startDate.setDate(startDate.getDate() - day + 1);
+        }
+
+        const daysOfWeek = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+
+        for (let i = 0; i < daysToRender; i++) {
+            const currentDay = new Date(startDate);
+            currentDay.setDate(startDate.getDate() + i);
+
+            const col = document.createElement('div');
+            col.className = 'day-column';
+            
+            const isToday = currentDay.toDateString() === new Date().toDateString();
+            const headerStyle = isToday ? 'color: var(--primary); font-weight: bold;' : '';
+
+            const dateStr = currentDay.getFullYear() + '-' + 
+                           (currentDay.getMonth() + 1).toString().padStart(2, '0') + '-' + 
+                           currentDay.getDate().toString().padStart(2, '0');
+            const zoneId = `zone-${dateStr}`;
+            
+            const savedTasks = localStorage.getItem(zoneId) || '';
+
+            col.innerHTML = `
+                <div class="day-header" style="${headerStyle}">
+                    ${daysOfWeek[currentDay.getDay()]} ${currentDay.getDate()}
+                </div>
+                <div class="tasks-dropzone" id="${zoneId}">
+                    ${savedTasks}
+                </div>
+            `;
+            daysContainer.appendChild(col);
+        }
+        rebindAll();
+    }
+
+    // --- Навигация по датам ---
+    const btnPrev = document.querySelectorAll('.btn-icon')[0];
+    const btnNext = document.querySelectorAll('.btn-icon')[1];
+    const btnToday = document.querySelector('.btn-today');
+
+    if (btnPrev) {
+        btnPrev.addEventListener('click', () => { 
+            saveState();
+            if (currentView === 'day') currentDate.setDate(currentDate.getDate() - 1);
+            if (currentView === 'week') currentDate.setDate(currentDate.getDate() - 7);
+            if (currentView === 'month') currentDate.setMonth(currentDate.getMonth() - 1);
+            renderCalendar();
+        });
+    }
+
+    if (btnNext) {
+        btnNext.addEventListener('click', () => { 
+            saveState();
+            if (currentView === 'day') currentDate.setDate(currentDate.getDate() + 1);
+            if (currentView === 'week') currentDate.setDate(currentDate.getDate() + 7);
+            if (currentView === 'month') currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar();
+        });
+    }
+
+    if (btnToday) {
+        btnToday.addEventListener('click', () => { 
+            saveState();
+            currentDate = new Date();
+            renderCalendar();
+        });
+    }
+
+    // --- Переключение видов ---
+    viewButtons.forEach((btn, index) => {
+        btn.addEventListener('click', () => {
+            saveState(); 
+            viewButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            if (index === 0) currentView = 'day';
+            if (index === 1) currentView = 'week';
+            if (index === 2) currentView = 'month';
+            renderCalendar();
+        });
     });
 
-    btnGoogle.addEventListener('click', () => {
-        // это эмвипи поэтому так авторизации через гугл нет, просто имитируем успешный вход
-        welcomeScreen.classList.add('hidden');
-        localStorage.setItem('kalendarius_auth', 'true'); 
-    });
-
-    // 2. Логика Drag & Drop
-    const tasks = document.querySelectorAll('.task-card');
-    const dropzones = document.querySelectorAll('.tasks-dropzone, .unassigned-tasks');
-
-    let draggedTask = null;
-
-    tasks.forEach(task => {
-        task.addEventListener('dragstart', function() {
-            draggedTask = this;
-            setTimeout(() => this.style.display = 'none', 0);
+    const menuToday = document.getElementById('menu-today');
+    if (menuToday) {
+        menuToday.addEventListener('click', () => {
+            saveState();
+            currentDate = new Date();
+            currentView = 'day';
+            viewButtons.forEach(b => b.classList.remove('active'));
+            if(viewButtons[0]) viewButtons[0].classList.add('active');
+            renderCalendar();
         });
+    }
 
-        task.addEventListener('dragend', function() {
-            setTimeout(() => {
-                draggedTask.style.display = 'block';
-                draggedTask = null;
-                saveState(); // Сохраняем состояние после перетаскивания
-            }, 0);
+    // --- 4. Управление списками ---
+    const btnAddList = document.getElementById('btn-add-list');
+    const customLists = document.getElementById('custom-lists');
+    const selectCategory = document.getElementById('new-task-category');
+
+    function bindListEvents() {
+        document.querySelectorAll('.list-item').forEach(li => {
+            li.ondblclick = function() {
+                if (confirm(`Удалить список "${this.innerText.trim()}"?`)) {
+                    const val = this.getAttribute('data-val');
+                    this.remove();
+                    if(selectCategory) {
+                        const opt = selectCategory.querySelector(`option[value="${val}"]`);
+                        if(opt) opt.remove();
+                    }
+                }
+            };
         });
-    });
+    }
 
-    dropzones.forEach(zone => {
-        zone.addEventListener('dragover', function(e) {
-            e.preventDefault(); // Необходимо для разрешения drop
-        });
+    if (btnAddList) {
+        btnAddList.addEventListener('click', () => {
+            const listName = prompt("Введите название нового списка:");
+            if (listName && customLists && selectCategory) {
+                const val = 'custom-' + Date.now();
+                const color = '#' + Math.floor(Math.random()*16777215).toString(16);
+                
+                const li = document.createElement('li');
+                li.className = 'list-item';
+                li.setAttribute('data-val', val);
+                li.innerHTML = `<span class="dot" style="background:${color}"></span> ${listName}`;
+                customLists.appendChild(li);
 
-        zone.addEventListener('dragenter', function(e) {
-            e.preventDefault();
-            this.style.background = 'rgba(99, 102, 241, 0.05)'; // Подсветка зоны
-        });
+                const opt = document.createElement('option');
+                opt.value = val;
+                opt.textContent = listName;
+                selectCategory.appendChild(opt);
 
-        zone.addEventListener('dragleave', function() {
-            this.style.background = 'transparent';
-        });
+                const style = document.createElement('style');
+                style.innerHTML = `.task-card.${val} { border-left-color: ${color}; }`;
+                document.head.appendChild(style);
 
-        zone.addEventListener('drop', function() {
-            this.style.background = 'transparent';
-            if (draggedTask) {
-                this.append(draggedTask);
+                bindListEvents();
             }
         });
-    });
-
-    // 3. Сохранение и загрузка состояния задач (LocalStorage)
-    function saveState() {
-        const unassigned = document.getElementById('unassigned-tasks').innerHTML;
-        const calendarDay = document.querySelector('.tasks-dropzone').innerHTML;
-        
-        localStorage.setItem('unassigned_tasks', unassigned);
-        localStorage.setItem('calendar_tasks', calendarDay);
     }
 
-    function loadState() {
-        const savedUnassigned = localStorage.getItem('unassigned_tasks');
-        const savedCalendar = localStorage.getItem('calendar_tasks');
+    bindListEvents();
 
-        if (savedUnassigned) document.getElementById('unassigned-tasks').innerHTML = savedUnassigned;
-        if (savedCalendar) document.querySelector('.tasks-dropzone').innerHTML = savedCalendar;
-        
-        // Нужно заново повесить слушатели событий на загруженные элементы
-        rebindDragEvents();
-    }
+    // --- 5. Drag & Drop ---
+    let draggedTask = null;
 
-    function rebindDragEvents() {
+    function rebindAll() {
         document.querySelectorAll('.task-card').forEach(task => {
             const newTask = task.cloneNode(true);
             task.parentNode.replaceChild(newTask, task);
@@ -97,26 +235,78 @@ document.addEventListener('DOMContentLoaded', () => {
                 setTimeout(() => {
                     draggedTask.style.display = 'block';
                     draggedTask = null;
-                    saveState();
+                    saveState(); 
                 }, 0);
             });
 
-            // ФИЧА: Удаление по двойному клику
             newTask.addEventListener('dblclick', function() {
                 if (confirm('Удалить эту задачу?')) {
                     this.remove();
-                    saveState();
+                    saveState(); 
+                }
+            });
+        });
+
+        document.querySelectorAll('.tasks-dropzone, .unassigned-tasks').forEach(zone => {
+            const newZone = zone.cloneNode(false); 
+            while (zone.firstChild) newZone.appendChild(zone.firstChild);
+            zone.parentNode.replaceChild(newZone, zone);
+
+            newZone.addEventListener('dragover', e => {
+                e.preventDefault();
+                newZone.classList.add('drag-over');
+            });
+            newZone.addEventListener('dragleave', function(e) {
+                if (!newZone.contains(e.relatedTarget)) {
+                    newZone.classList.remove('drag-over');
+                }
+            });
+            newZone.addEventListener('drop', function(e) {
+                newZone.classList.remove('drag-over');
+                if (draggedTask) {
+                    // "Кидаем правильно": если кидаем в календарь и это сетка дней, определяем позицию
+                    if (this.classList.contains('tasks-dropzone') && currentView !== 'month') {
+                        const rect = this.getBoundingClientRect();
+                        const y = e.clientY - rect.top;
+                        // 1 час = 60px
+                        const hours = Math.floor(y / 60);
+                        const minutes = Math.floor(((y % 60) / 60) * 60);
+                        
+                        // Формируем время (8:00 - начало)
+                        const hourVal = 8 + hours;
+                        if (hourVal >= 8 && hourVal < 24) {
+                            const timeStr = `${hourVal.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+                            
+                            // Обновляем текст задачи добавлением времени, если там его нет
+                            let text = draggedTask.textContent.split(' | ');
+                            const title = text.length > 1 ? text[1] : text[0];
+                            draggedTask.textContent = `${timeStr} | ${title.trim()}`;
+                            
+                            // Визуальное позиционирование
+                            draggedTask.style.position = 'absolute';
+                            draggedTask.style.top = `${hours * 60 + (minutes/60)*60}px`;
+                            draggedTask.style.left = '5px';
+                            draggedTask.style.right = '5px';
+                            draggedTask.style.width = 'auto';
+                            draggedTask.style.margin = '0'; // убираем margin для точного позиционирования
+                        }
+                    } else if (this.classList.contains('unassigned-tasks') || currentView === 'month') {
+                        // Если вернули обратно в незавершенные или режим месяца
+                        draggedTask.style.position = 'relative';
+                        draggedTask.style.top = '0';
+                        draggedTask.style.left = '0';
+                        draggedTask.style.right = '0';
+                        draggedTask.style.margin = '0 0 10px 0';
+                    }
+
+                    this.append(draggedTask);
+                    saveState(); 
                 }
             });
         });
     }
-    rebindDragEvents();
 
-    // Загружаем данные при старте
-    if(localStorage.getItem('unassigned_tasks')) {
-        loadState();
-    }
-    // 4. Логика создания новой задачи
+    // --- 6. Создание задачи ---
     const btnNewTask = document.getElementById('btn-new-task');
     const taskModal = document.getElementById('task-modal');
     const btnCancelTask = document.getElementById('btn-cancel-task');
@@ -124,95 +314,51 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Элементы формы
     const inputTaskTitle = document.getElementById('new-task-title');
-    const selectTaskCategory = document.getElementById('new-task-category');
-    const unassignedTasksContainer = document.getElementById('unassigned-tasks');
 
-    // Открыть модалку
-    btnNewTask.addEventListener('click', () => {
-        taskModal.classList.remove('hidden');
-        inputTaskTitle.value = ''; // Очищаем поле ввода
-    });
+    if (btnNewTask && taskModal) {
+        btnNewTask.addEventListener('click', () => { 
+            taskModal.classList.remove('hidden'); 
+            if(inputTaskTitle) inputTaskTitle.value = ''; 
+        });
+    }
 
-    // Закрыть модалку
-    btnCancelTask.addEventListener('click', () => {
-        taskModal.classList.add('hidden');
-    });
+    if (btnCancelTask && taskModal) {
+        btnCancelTask.addEventListener('click', () => taskModal.classList.add('hidden'));
+    }
 
-    // Сохранить задачу
-    btnSaveTask.addEventListener('click', () => {
-        const title = inputTaskTitle.value.trim();
-        const category = selectTaskCategory.value;
-
-        if (title !== '') {
-            // Создаем новый HTML элемент задачи
-            const newTask = document.createElement('div');
-            newTask.className = `task-card ${category}`;
-            newTask.draggable = true;
-            newTask.textContent = title;
+    if (btnSaveTask) {
+        btnSaveTask.addEventListener('click', () => {
+            if (!inputTaskTitle || !selectCategory) return;
             
-            // Уникальный ID для корректного Drag & Drop
-            newTask.id = 'task-' + Date.now();
+            const title = inputTaskTitle.value.trim();
+            const category = selectCategory.value;
 
-            // Добавляем слушатели событий для новой задачи, чтобы ее можно было перетаскивать
-            newTask.addEventListener('dragstart', function() {
-                draggedTask = this;
-                setTimeout(() => this.style.display = 'none', 0);
-            });
-            newTask.addEventListener('dragend', function() {
-                setTimeout(() => {
-                    draggedTask.style.display = 'block';
-                    draggedTask = null;
-                    saveState();
-                }, 0);
-            });
+            if (title !== '') {
+                const newTask = document.createElement('div');
+                newTask.className = `task-card ${category}`;
+                newTask.draggable = true;
+                
+                newTask.textContent = title;
+                newTask.id = 'task-' + Date.now();
 
-            // Добавляем в колонку "Без времени" (справа)
-            unassignedTasksContainer.appendChild(newTask);
-            
-            // Сохраняем в localStorage и закрываем окно
-            saveState();
-            taskModal.classList.add('hidden');
-        }
-    });
-    // 5. Имитация навигации по календарю
-    const btnPrev = document.querySelectorAll('.btn-icon')[0];
-    const btnNext = document.querySelectorAll('.btn-icon')[1];
-    const btnToday = document.querySelector('.btn-today');
-    const monthLabel = document.querySelector('.date-controls h2');
-
-    // Фейковые данные для красивой презентации
-    const dummyMonths = ["Май 2026", "Июнь 2026", "Июль 2026"];
-    let currentMonthIdx = 0;
-
-    btnNext.addEventListener('click', () => {
-        currentMonthIdx = (currentMonthIdx + 1) % dummyMonths.length;
-        monthLabel.textContent = dummyMonths[currentMonthIdx];
-    });
-
-    btnPrev.addEventListener('click', () => {
-        currentMonthIdx = (currentMonthIdx - 1 + dummyMonths.length) % dummyMonths.length;
-        monthLabel.textContent = dummyMonths[currentMonthIdx];
-    });
-
-    btnToday.addEventListener('click', () => {
-        currentMonthIdx = 0;
-        monthLabel.textContent = dummyMonths[currentMonthIdx];
-    });
-
-    // 6. Левое меню (Входящие, Сегодня)
-    const menuItems = document.querySelectorAll('.menu li');
-    menuItems.forEach(item => {
-        item.addEventListener('click', function() {
-            // Убираем подсветку со всех и вешаем на нажатый
-            menuItems.forEach(i => i.classList.remove('active'));
-            this.classList.add('active');
-            
-            // Если это не календарь, показываем заглушку
-            if(!this.textContent.includes('Календарь')) {
-                // Извлекаем текст без цифр
-                const sectionName = this.textContent.replace(/[0-9]/g, '').trim();
-                alert(`Раздел "${sectionName}" находится в разработке. Для демонстрации используется раздел "Календарь".`);
+                const unassignedContainer = document.getElementById('unassigned-tasks');
+                if (unassignedContainer) {
+                    unassignedContainer.appendChild(newTask);
+                }
+                
+                if (taskModal) taskModal.classList.add('hidden');
+                rebindAll();
+                saveState(); 
             }
         });
-    });
+    }
+
+    // Инициализация загрузки из памяти
+    const savedUnassigned = localStorage.getItem('unassigned_tasks');
+    if (savedUnassigned) {
+        const unassignedContainer = document.getElementById('unassigned-tasks');
+        if (unassignedContainer) unassignedContainer.innerHTML = savedUnassigned;
+    }
+
+    renderCalendar();
 });

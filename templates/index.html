@@ -16,24 +16,28 @@
             <button class="btn-google">Войти через Google</button>
         </div>
     </div>
+
     <div class="app-container">
         <aside class="sidebar">
             <div class="logo">Календариус</div>
             <button class="btn-primary" id="btn-new-task">+ Новая задача</button>
             <nav class="menu">
                 <ul>
-                    <li>Входящие <span class="badge">7</span></li>
-                    <li>Сегодня <span class="badge">5</span></li>
-                    <li class="active">Календарь</li>
+                    <li id="menu-today">Сегодня <span class="badge" id="today-badge"></span></li>
+                    <li id="menu-calendar" class="active">Календарь</li>
                 </ul>
             </nav>
             <div class="lists">
-                <h3>Мои списки</h3>
-                <ul>
-                    <li><span class="dot work"></span> Работа</li>
-                    <li><span class="dot study"></span> Учёба</li>
-                    <li><span class="dot personal"></span> Личное</li>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3 style="margin: 0;">Мои списки</h3>
+                    <button id="btn-add-list" style="border:none; background:none; cursor:pointer; color:var(--primary); font-size:18px; font-weight:bold;">+</button>
+                </div>
+                <ul id="custom-lists">
+                    <li class="list-item" data-val="work"><span class="dot work"></span> Работа</li>
+                    <li class="list-item" data-val="study"><span class="dot study"></span> Учёба</li>
+                    <li class="list-item" data-val="personal"><span class="dot personal"></span> Личное</li>
                 </ul>
+                <p class="hint-text" style="font-size: 10px; margin-top: 10px;">Двойной клик по списку удалит его</p>
             </div>
         </aside>
 
@@ -53,18 +57,9 @@
             </header>
             
             <div class="calendar-grid" id="calendar-grid">
-                <div class="time-column">
-                    <div>09:00</div>
-                    <div>10:00</div>
-                    <div>11:00</div>
-                    <div>12:00</div>
-                </div>
-                <div class="days-container">
-                    <div class="day-column" id="day-1" data-date="2026-05-25">
-                        <div class="day-header">Пн 25</div>
-                        <div class="tasks-dropzone">
-                            </div>
+                <div class="time-column" id="time-column">
                     </div>
+                <div class="days-container">
                 </div>
             </div>
         </main>
@@ -73,22 +68,17 @@
             <h3>Незавершённые задачи</h3>
             <p class="hint-text">Подсказка: дважды кликните по задаче, чтобы удалить её</p>
             <div class="unassigned-tasks" id="unassigned-tasks">
-                <div class="task-card work" draggable="true" id="task-1">
-                    Подготовить макеты
                 </div>
-                <div class="task-card personal" draggable="true" id="task-2">
-                    Купить продукты
-                </div>
-            </div>
         </aside>
     </div>
+
     <div id="task-modal" class="welcome-screen hidden">
         <div class="welcome-card" style="text-align: left;">
             <h2 style="margin-bottom: 20px;">Новая задача</h2>
             
             <label style="display: block; margin-bottom: 5px; color: var(--text-muted); font-size: 14px;">Название задачи</label>
-            <input type="text" id="new-task-title" placeholder="Например: Подготовиться к экзамену" style="width: 100%; padding: 10px; margin-bottom: 20px; border: 1px solid var(--border-color); border-radius: 6px;">
-            
+            <input type="text" id="new-task-title" placeholder="Например: Подготовиться к экзамену" style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid var(--border-color); border-radius: 6px;">
+
             <label style="display: block; margin-bottom: 5px; color: var(--text-muted); font-size: 14px;">Категория</label>
             <select id="new-task-category" style="width: 100%; padding: 10px; margin-bottom: 30px; border: 1px solid var(--border-color); border-radius: 6px;">
                 <option value="work">Работа</option>
