@@ -96,4 +96,62 @@ document.addEventListener('DOMContentLoaded', () => {
     if(localStorage.getItem('unassigned_tasks')) {
         loadState();
     }
+    // 4. Логика создания новой задачи
+    const btnNewTask = document.getElementById('btn-new-task');
+    const taskModal = document.getElementById('task-modal');
+    const btnCancelTask = document.getElementById('btn-cancel-task');
+    const btnSaveTask = document.getElementById('btn-save-task');
+    
+    // Элементы формы
+    const inputTaskTitle = document.getElementById('new-task-title');
+    const selectTaskCategory = document.getElementById('new-task-category');
+    const unassignedTasksContainer = document.getElementById('unassigned-tasks');
+
+    // Открыть модалку
+    btnNewTask.addEventListener('click', () => {
+        taskModal.classList.remove('hidden');
+        inputTaskTitle.value = ''; // Очищаем поле ввода
+    });
+
+    // Закрыть модалку
+    btnCancelTask.addEventListener('click', () => {
+        taskModal.classList.add('hidden');
+    });
+
+    // Сохранить задачу
+    btnSaveTask.addEventListener('click', () => {
+        const title = inputTaskTitle.value.trim();
+        const category = selectTaskCategory.value;
+
+        if (title !== '') {
+            // Создаем новый HTML элемент задачи
+            const newTask = document.createElement('div');
+            newTask.className = `task-card ${category}`;
+            newTask.draggable = true;
+            newTask.textContent = title;
+            
+            // Уникальный ID для корректного Drag & Drop
+            newTask.id = 'task-' + Date.now();
+
+            // Добавляем слушатели событий для новой задачи, чтобы ее можно было перетаскивать
+            newTask.addEventListener('dragstart', function() {
+                draggedTask = this;
+                setTimeout(() => this.style.display = 'none', 0);
+            });
+            newTask.addEventListener('dragend', function() {
+                setTimeout(() => {
+                    draggedTask.style.display = 'block';
+                    draggedTask = null;
+                    saveState();
+                }, 0);
+            });
+
+            // Добавляем в колонку "Без времени" (справа)
+            unassignedTasksContainer.appendChild(newTask);
+            
+            // Сохраняем в localStorage и закрываем окно
+            saveState();
+            taskModal.classList.add('hidden');
+        }
+    });
 });

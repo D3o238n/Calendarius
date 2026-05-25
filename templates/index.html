@@ -81,7 +81,26 @@
             </div>
         </aside>
     </div>
-
+    <div id="task-modal" class="welcome-screen hidden">
+        <div class="welcome-card" style="text-align: left;">
+            <h2 style="margin-bottom: 20px;">Новая задача</h2>
+            
+            <label style="display: block; margin-bottom: 5px; color: var(--text-muted); font-size: 14px;">Название задачи</label>
+            <input type="text" id="new-task-title" placeholder="Например: Подготовиться к экзамену" style="width: 100%; padding: 10px; margin-bottom: 20px; border: 1px solid var(--border-color); border-radius: 6px;">
+            
+            <label style="display: block; margin-bottom: 5px; color: var(--text-muted); font-size: 14px;">Категория</label>
+            <select id="new-task-category" style="width: 100%; padding: 10px; margin-bottom: 30px; border: 1px solid var(--border-color); border-radius: 6px;">
+                <option value="work">Работа</option>
+                <option value="study">Учёба</option>
+                <option value="personal">Личное</option>
+            </select>
+            
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button id="btn-cancel-task" style="padding: 10px 15px; border: none; background: #E2E8F0; border-radius: 6px; cursor: pointer;">Отмена</button>
+                <button id="btn-save-task" class="btn-primary">Добавить задачу</button>
+            </div>
+        </div>
+    </div>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
