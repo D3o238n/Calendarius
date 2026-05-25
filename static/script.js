@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. Логика экрана входа
     const welcomeScreen = document.getElementById('welcome-screen');
     const btnStart = document.getElementById('btn-start');
+    const btnGoogle = document.querySelector('.btn-google');
 
     // Проверяем, заходил ли пользователь ранее
     if (localStorage.getItem('kalendarius_auth') === 'true') {
@@ -11,6 +12,12 @@ document.addEventListener('DOMContentLoaded', () => {
     btnStart.addEventListener('click', () => {
         welcomeScreen.classList.add('hidden');
         localStorage.setItem('kalendarius_auth', 'true'); // Сохраняем сессию
+    });
+
+    btnGoogle.addEventListener('click', () => {
+        // это эмвипи поэтому так авторизации через гугл нет, просто имитируем успешный вход
+        welcomeScreen.classList.add('hidden');
+        localStorage.setItem('kalendarius_auth', 'true'); 
     });
 
     // 2. Логика Drag & Drop
@@ -166,5 +173,46 @@ document.addEventListener('DOMContentLoaded', () => {
             saveState();
             taskModal.classList.add('hidden');
         }
+    });
+    // 5. Имитация навигации по календарю
+    const btnPrev = document.querySelectorAll('.btn-icon')[0];
+    const btnNext = document.querySelectorAll('.btn-icon')[1];
+    const btnToday = document.querySelector('.btn-today');
+    const monthLabel = document.querySelector('.date-controls h2');
+
+    // Фейковые данные для красивой презентации
+    const dummyMonths = ["Май 2026", "Июнь 2026", "Июль 2026"];
+    let currentMonthIdx = 0;
+
+    btnNext.addEventListener('click', () => {
+        currentMonthIdx = (currentMonthIdx + 1) % dummyMonths.length;
+        monthLabel.textContent = dummyMonths[currentMonthIdx];
+    });
+
+    btnPrev.addEventListener('click', () => {
+        currentMonthIdx = (currentMonthIdx - 1 + dummyMonths.length) % dummyMonths.length;
+        monthLabel.textContent = dummyMonths[currentMonthIdx];
+    });
+
+    btnToday.addEventListener('click', () => {
+        currentMonthIdx = 0;
+        monthLabel.textContent = dummyMonths[currentMonthIdx];
+    });
+
+    // 6. Левое меню (Входящие, Сегодня)
+    const menuItems = document.querySelectorAll('.menu li');
+    menuItems.forEach(item => {
+        item.addEventListener('click', function() {
+            // Убираем подсветку со всех и вешаем на нажатый
+            menuItems.forEach(i => i.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Если это не календарь, показываем заглушку
+            if(!this.textContent.includes('Календарь')) {
+                // Извлекаем текст без цифр
+                const sectionName = this.textContent.replace(/[0-9]/g, '').trim();
+                alert(`Раздел "${sectionName}" находится в разработке. Для демонстрации используется раздел "Календарь".`);
+            }
+        });
     });
 });
